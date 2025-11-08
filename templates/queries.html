@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Queries based on Application Functionality</h3>
+
+<article>
+  <h5>Nested (with GUI): Above-average recipients on a day</h5>
+  <form method="post" class="grid-3">
+    <input name="nested_camp" placeholder="Camp ID">
+    <input name="nested_date" placeholder="YYYY-MM-DD">
+    <button type="submit" name="action" value="nested">Run</button>
+  </form>
+  {% if nested_rows is not none %}
+    <div class="scroll">
+    <table role="grid">
+      <thead><tr><th>VictimID</th><th>Name</th><th>Total Qty</th></tr></thead>
+      <tbody>
+        {% for r in nested_rows %}
+          <tr><td>{{ r.VictimID }}</td><td>{{ r.Name }}</td><td>{{ r.total_qty }}</td></tr>
+        {% endfor %}
+        {% if not nested_rows %}<tr><td colspan="3">No rows.</td></tr>{% endif %}
+      </tbody>
+    </table>
+    </div>
+  {% endif %}
+</article>
+
+<article>
+  <h5>Join (with GUI): Aid log with names (date range)</h5>
+  <form method="post" class="grid-4">
+    <input name="join_from" placeholder="From YYYY-MM-DD">
+    <input name="join_to" placeholder="To YYYY-MM-DD">
+    <input name="join_camp" placeholder="Camp ID (optional)">
+    <button type="submit" name="action" value="join">Run</button>
+  </form>
+  {% if join_rows is not none %}
+    <div class="scroll">
+    <table role="grid">
+      <thead>
+        <tr><th>Date</th><th>Volunteer</th><th>Victim</th><th>Resource</th><th>Qty</th><th>Camp</th></tr>
+      </thead>
+      <tbody>
+        {% for r in join_rows %}
+          <tr>
+            <td>{{ r.Date }}</td><td>{{ r.Volunteer }}</td><td>{{ r.Victim }}</td>
+            <td>{{ r.Resource }}</td><td>{{ r.Qty }}</td><td>{{ r.CampID }}</td>
+          </tr>
+        {% endfor %}
+        {% if not join_rows %}<tr><td colspan="6">No rows.</td></tr>{% endif %}
+      </tbody>
+    </table>
+    </div>
+  {% endif %}
+</article>
+
+<article>
+  <h5>Aggregate (with GUI): Total qty by Resource (Camp + Range)</h5>
+  <form method="post" class="grid-4">
+    <input name="agg_camp" placeholder="Camp ID">
+    <input name="agg_from" placeholder="From YYYY-MM-DD">
+    <input name="agg_to" placeholder="To YYYY-MM-DD">
+    <button type="submit" name="action" value="aggregate">Run</button>
+  </form>
+  {% if agg_rows is not none %}
+    <div class="scroll">
+    <table role="grid">
+      <thead><tr><th>Resource</th><th>TotalQty</th></tr></thead>
+      <tbody>
+        {% for r in agg_rows %}
+          <tr><td>{{ r.Resource }}</td><td>{{ r.TotalQty }}</td></tr>
+        {% endfor %}
+        {% if not agg_rows %}<tr><td colspan="2">No rows.</td></tr>{% endif %}
+      </tbody>
+    </table>
+    </div>
+  {% endif %}
+</article>
+{% endblock %}

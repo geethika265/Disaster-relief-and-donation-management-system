@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <title>Disaster Relief Manager</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <!-- Pico.css for quick, clean dark UI -->
+    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@2/css/pico.min.css">
+    <style>
+      .nav a { margin-right: 12px; }
+      .table-scroll { overflow-x: auto; }
+      .muted { opacity: .85; }
+      .grid3 { display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+      .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+      .grid4 { display:grid; grid-template-columns: repeat(4,1fr); gap: 1rem; }
+    </style>
+  </head>
+  <body>
+  <header class="container">
+    <nav>
+      <ul>
+        <li><strong>Disaster Relief<br/>Manager</strong></li>
+      </ul>
+      <ul class="nav">
+        <li><a href="{{ url_for('index') }}">Dashboard</a></li>
+        {% for t in tabs %}
+          <li><a href="{{ url_for('crud_list', tab=t) }}">{{ t }}</a></li>
+        {% endfor %}
+        <li><a href="{{ url_for('dbops') }}">DB<br>Operations</a></li>
+        <li><a href="{{ url_for('queries') }}">Queries</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div>
+          {% for cat, msg in messages %}
+            <article class="{{ 'contrast' if cat in ['danger','warning'] else '' }}">
+              <small class="muted">{{ cat|upper }}</small><br/>{{ msg }}
+            </article>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+  </body>
+</html>

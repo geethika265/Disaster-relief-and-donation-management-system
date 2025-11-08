@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>{{ tab }} — CRUD</h3>
+
+<div class="scroll">
+<table role="grid">
+  <thead>
+    <tr>
+      {% for c in cols %}<th>{{ c }}</th>{% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in rows %}
+      <tr>
+        {% for c in cols %}
+          <td>{{ r[c] }}</td>
+        {% endfor %}
+      </tr>
+    {% endfor %}
+    {% if not rows %}
+      <tr><td colspan="{{ cols|length }}"><em>No rows.</em></td></tr>
+    {% endif %}
+  </tbody>
+</table>
+</div>
+
+<h4>Add / Update / Delete</h4>
+<form method="post">
+  <div class="grid-3">
+    {% for c in cols %}
+      <label>
+        <span>{{ c }}</span>
+        <input name="{{ c }}" placeholder="{{ c }}">
+      </label>
+    {% endfor %}
+  </div>
+  <div class="grid-3">
+    <button type="submit" name="action" value="add">Add</button>
+    <button type="submit" name="action" value="update" {% if pk is iterable and pk is not string %}disabled{% endif %}>
+      Update{% if pk is iterable and pk is not string %} (disabled: composite key){% endif %}
+    </button>
+    <button type="submit" name="action" value="delete">Delete</button>
+  </div>
+  <p class="muted">
+    For <strong>Delete</strong>: fill the primary key fields
+    {% if pk is string %}(<code>{{ pk }}</code>){% else %}({{ pk }}){% endif %}.
+    For <strong>Update</strong>: fill all fields; you can only update rows when the PK is a single column.
+  </p>
+</form>
+{% endblock %}

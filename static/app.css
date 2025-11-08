@@ -1,0 +1,4 @@
+body { background: #f8fafc; }
+.nav-link { color: #333; }
+.nav-link:hover { background: #e7eef7; border-radius: 6px; }
+.card { border-radius: 12px; }

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Dashboard</h3>
+
+<div class="grid-4">
+  <article><header>Camps</header><h2>{{ stats.camps }}</h2></article>
+  <article><header>Volunteers</header><h2>{{ stats.volunteers }}</h2></article>
+  <article><header>Victims</header><h2>{{ stats.victims }}</h2></article>
+  <article><header>Aid Rows</header><h2>{{ stats.aid_rows }}</h2></article>
+</div>
+
+<h4>Recent Aid</h4>
+<div class="scroll">
+<table role="grid">
+  <thead><tr>
+    <th>Date</th><th>Volunteer</th><th>Victim</th><th>Resource</th><th>Qty</th><th>Camp</th>
+  </tr></thead>
+  <tbody>
+    {% for r in recent_aid %}
+    <tr>
+      <td>{{ r.Date }}</td><td>{{ r.Volunteer }}</td><td>{{ r.Victim }}</td>
+      <td>{{ r.Resource }}</td><td>{{ r.Qty }}</td><td>{{ r.CampID }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}
