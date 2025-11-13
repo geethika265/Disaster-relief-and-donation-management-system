@@ -2,6 +2,10 @@
 {% block content %}
 <h3>Queries based on Application Functionality</h3>
 
+{% if notice %}
+  <div class="alert alert-info" role="alert">{{ notice }}</div>
+{% endif %}
+
 <article>
   <h5>Nested (with GUI): Above-average recipients on a day</h5>
   <form method="post" class="grid-3">
@@ -11,15 +15,16 @@
   </form>
   {% if nested_rows is not none %}
     <div class="scroll">
-    <table role="grid">
-      <thead><tr><th>VictimID</th><th>Name</th><th>Total Qty</th></tr></thead>
-      <tbody>
+      <table role="grid">
+        <thead><tr><th>VictimID</th><th>Name</th><th>Total Qty</th></tr></thead>
+        <tbody>
         {% for r in nested_rows %}
           <tr><td>{{ r.VictimID }}</td><td>{{ r.Name }}</td><td>{{ r.total_qty }}</td></tr>
+        {% else %}
+          <tr><td colspan="3">No rows.</td></tr>
         {% endfor %}
-        {% if not nested_rows %}<tr><td colspan="3">No rows.</td></tr>{% endif %}
-      </tbody>
-    </table>
+        </tbody>
+      </table>
     </div>
   {% endif %}
 </article>
@@ -34,20 +39,25 @@
   </form>
   {% if join_rows is not none %}
     <div class="scroll">
-    <table role="grid">
-      <thead>
-        <tr><th>Date</th><th>Volunteer</th><th>Victim</th><th>Resource</th><th>Qty</th><th>Camp</th></tr>
-      </thead>
-      <tbody>
+      <table role="grid">
+        <thead>
+          <tr><th>Date</th><th>Volunteer</th><th>Victim</th><th>Resource</th><th>Qty</th><th>Camp</th></tr>
+        </thead>
+        <tbody>
         {% for r in join_rows %}
           <tr>
-            <td>{{ r.Date }}</td><td>{{ r.Volunteer }}</td><td>{{ r.Victim }}</td>
-            <td>{{ r.Resource }}</td><td>{{ r.Qty }}</td><td>{{ r.CampID }}</td>
+            <td>{{ r.Date }}</td>
+            <td>{{ r.Volunteer }}</td>
+            <td>{{ r.Victim }}</td>
+            <td>{{ r.Resource }}</td>
+            <td>{{ r.Qty }}</td>
+            <td>{{ r.CampID }}</td>
           </tr>
+        {% else %}
+          <tr><td colspan="6">No rows.</td></tr>
         {% endfor %}
-        {% if not join_rows %}<tr><td colspan="6">No rows.</td></tr>{% endif %}
-      </tbody>
-    </table>
+        </tbody>
+      </table>
     </div>
   {% endif %}
 </article>
@@ -62,15 +72,16 @@
   </form>
   {% if agg_rows is not none %}
     <div class="scroll">
-    <table role="grid">
-      <thead><tr><th>Resource</th><th>TotalQty</th></tr></thead>
-      <tbody>
+      <table role="grid">
+        <thead><tr><th>Resource</th><th>TotalQty</th></tr></thead>
+        <tbody>
         {% for r in agg_rows %}
           <tr><td>{{ r.Resource }}</td><td>{{ r.TotalQty }}</td></tr>
+        {% else %}
+          <tr><td colspan="2">No rows.</td></tr>
         {% endfor %}
-        {% if not agg_rows %}<tr><td colspan="2">No rows.</td></tr>{% endif %}
-      </tbody>
-    </table>
+        </tbody>
+      </table>
     </div>
   {% endif %}
 </article>

@@ -5,7 +5,8 @@
     <title>Disaster Relief Manager</title>
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <!-- Pico.css for quick, clean dark UI -->
-    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet"
+          href="https://unpkg.com/@picocss/pico@2/css/pico.min.css">
     <style>
       .nav a { margin-right: 12px; }
       .table-scroll { overflow-x: auto; }
@@ -13,9 +14,24 @@
       .grid3 { display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
       .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
       .grid4 { display:grid; grid-template-columns: repeat(4,1fr); gap: 1rem; }
+      .top-banner {
+        background:#0f5132;
+        color:#d1fae5;
+        padding:0.3rem 1.2rem;
+        font-size:0.85rem;
+        text-align:center;
+      }
     </style>
   </head>
   <body>
+
+  {% if db_user %}
+  <div class="top-banner">
+    Connected as: <strong>{{ db_user }}</strong>
+    {% if role %} (Role: {{ role }}){% endif %}
+  </div>
+  {% endif %}
+
   <header class="container">
     <nav>
       <ul>
@@ -23,11 +39,38 @@
       </ul>
       <ul class="nav">
         <li><a href="{{ url_for('index') }}">Dashboard</a></li>
-        {% for t in tabs %}
-          <li><a href="{{ url_for('crud_list', tab=t) }}">{{ t }}</a></li>
-        {% endfor %}
-        <li><a href="{{ url_for('dbops') }}">DB<br>Operations</a></li>
-        <li><a href="{{ url_for('queries') }}">Queries</a></li>
+
+        {# ─── CRUD tabs – only Admin can see ─── #}
+        {% if role == 'Admin' %}
+          {% for t in tabs %}
+            <li><a href="{{ url_for('crud_list', tab=t) }}">{{ t }}</a></li>
+          {% endfor %}
+        {% endif %}
+
+        {# ─── DB Operations: Admin + Operator ─── #}
+        {% if role in ['Admin', 'Operator'] %}
+          <li><a href="{{ url_for('dbops') }}">DB<br>Operations</a></li>
+        {% endif %}
+
+        {# ─── Queries: all logged-in roles ─── #}
+        {% if role in ['Admin', 'Operator', 'Viewer'] %}
+          <li><a href="{{ url_for('queries') }}">Queries</a></li>
+        {% endif %}
+
+        {# ─── Login / Logout button ─── #}
+        {% if db_user %}
+          <li>
+            <a href="{{ url_for('logout') }}" role="button" class="contrast">
+              Logout
+            </a>
+          </li>
+        {% else %}
+          <li>
+            <a href="{{ url_for('login') }}" role="button">
+              Login
+            </a>
+          </li>
+        {% endif %}
       </ul>
     </nav>
   </header>
@@ -44,6 +87,7 @@
         </div>
       {% endif %}
     {% endwith %}
+
     {% block content %}{% endblock %}
   </main>
   </body>

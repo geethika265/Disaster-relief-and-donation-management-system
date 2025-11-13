@@ -1,76 +1,79 @@
-{% extends "base.html" %}
-{% block content %}
-<h2>Database Operations</h2>
-<p class="muted">Call stored procedures and functions. The Trigger Demonstration at the end proves all three AidDistribution triggers.</p>
+<!-- templates/dbops.html -->
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>DB Operations</title>
+    <style>
+      body{font-family:system-ui;background:#0f1522;color:#eaeef6}
+      .wrap{max-width:980px;margin:30px auto}
+      .card{background:#161c2d;padding:18px;border-radius:12px;margin:14px 0}
+      input,button{padding:10px;border-radius:8px;border:0;margin:6px 6px 6px 0}
+      input{min-width:180px}
+      button{background:#1976d2;color:white;cursor:pointer}
+      .flash{background:#0f253f;padding:10px;border-radius:8px;margin:10px 0}
+      a{color:#58a6ff;text-decoration:none}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <p><a href="{{ url_for('index') }}">← Dashboard</a></p>
+      <h2>Database Operations</h2>
 
-<!-- DistributeAid -->
-<article>
-  <header><strong>Procedure:</strong> DistributeAid(volunteerId, victimId, resourceId, qty, date?)</header>
-  <form method="post" class="grid4">
-    <input name="d_vol"  placeholder="VolunteerID (e.g., 201)">
-    <input name="d_vic"  placeholder="VictimID (e.g., 301)">
-    <input name="d_res"  placeholder="ResourceID (e.g., 401)">
-    <input name="d_qty"  placeholder="Qty (e.g., 2)">
-    <input name="d_date" placeholder="Date YYYY-MM-DD (optional)">
-    <input type="hidden" name="action" value="distribute">
-    <button>Run DistributeAid()</button>
-  </form>
-</article>
+      {% if notice %}
+        <div class="flash">{{ notice }}</div>
+      {% endif %}
 
-<!-- assign_volunteer -->
-<article>
-  <header><strong>Procedure:</strong> assign_volunteer(campId, volunteerId, date)</header>
-  <form method="post" class="grid3">
-    <input name="a_camp" placeholder="CampID (e.g., 101)">
-    <input name="a_vol"  placeholder="VolunteerID (e.g., 201)">
-    <input name="a_date" placeholder="Date YYYY-MM-DD (optional → today)">
-    <input type="hidden" name="action" value="assign">
-    <button>Run assign_volunteer()</button>
-  </form>
-</article>
+      <div class="card">
+        <h3>DistributeAid(volunteerId, victimId, resourceId, qty, date?)</h3>
+        <form method="post">
+          <input name="volunteer_id" placeholder="VolunteerID (e.g., 201)">
+          <input name="victim_id"    placeholder="VictimID (e.g., 301)">
+          <input name="resource_id"  placeholder="ResourceID (e.g., 401)">
+          <input name="qty"          placeholder="Qty (e.g., 2)">
+          <input name="date"         placeholder="YYYY-MM-DD (optional)">
+          <button type="submit" name="action" value="distribute">Run DistributeAid()</button>
+        </form>
+      </div>
 
-<!-- camp_occupancy_for -->
-<article>
-  <header><strong>Function:</strong> camp_occupancy_for(campId) → % occupancy</header>
-  <form method="post" class="grid2">
-    <input name="occ_camp" placeholder="CampID (e.g., 101)">
-    <input type="hidden" name="action" value="occ_for">
-    <button>Get Occupancy</button>
-  </form>
-</article>
+      <div class="card">
+        <h3>assign_volunteer(campId, volunteerId, date?)</h3>
+        <form method="post">
+          <input name="assign_camp_id"      placeholder="CampID (e.g., 101)">
+          <input name="assign_volunteer_id" placeholder="VolunteerID (e.g., 201)">
+          <input name="assign_date"         placeholder="YYYY-MM-DD (optional)">
+          <button type="submit" name="action" value="assign_volunteer">Run assign_volunteer()</button>
+        </form>
+      </div>
 
-<!-- CountVictimsInCamp -->
-<article>
-  <header><strong>Function:</strong> CountVictimsInCamp(campId) → count</header>
-  <form method="post" class="grid2">
-    <input name="c_camp" placeholder="CampID (e.g., 101)">
-    <input type="hidden" name="action" value="count">
-    <button>Count Victims</button>
-  </form>
-</article>
+      <div class="card">
+        <h3>Functions</h3>
+        <form method="post" style="margin-bottom:8px">
+          <input name="occ_camp_id" placeholder="CampID (e.g., 101)">
+          <button type="submit" name="action" value="occ">Get camp_occupancy_for()</button>
+        </form>
+        <form method="post">
+          <input name="count_camp_id" placeholder="CampID (e.g., 101)">
+          <button type="submit" name="action" value="count_victims">Get CountVictimsInCamp()</button>
+        </form>
+      </div>
 
-<!-- Trigger Demonstration -->
-<article>
-  <header><strong>Trigger Demonstration (AidDistribution)</strong></header>
-  <p class="muted">
-    This section proves the three triggers: BEFORE INSERT blocks negative quantity; AFTER INSERT decrements stock; AFTER DELETE restores stock.
-  </p>
-
-  <form method="post" class="grid4">
-    <input name="t_vol"  placeholder="VolunteerID (e.g., 201)">
-    <input name="t_vic"  placeholder="VictimID (e.g., 301)">
-    <input name="t_res"  placeholder="ResourceID (e.g., 401)">
-    <input name="t_qty"  placeholder="Qty for valid insert (e.g., 4)">
-    <input name="t_date" placeholder="Date YYYY-MM-DD (blank → today)">
-
-    <button type="submit" name="action" value="trg_neg" style="grid-column: span 2;">1) BEFORE INSERT: try negative qty (should be blocked)</button>
-    <button type="submit" name="action" value="trg_ok"  style="grid-column: span 1;">2) AFTER INSERT: valid insert (decrement stock)</button>
-    <button type="submit" name="action" value="trg_del" style="grid-column: span 1;">3) AFTER DELETE: delete same row (restore stock)</button>
-  </form>
-
-  <small class="muted">
-    Suggested test IDs: 201 / 301 / 401 and date 2024-07-03.  
-    After step 2 you should see stock “before → after” decreased. After step 3 it should be restored.
-  </small>
-</article>
-{% endblock %}
+      <div class="card">
+        <h3>Trigger Demonstration (AidDistribution)</h3>
+        <p>Use the same IDs below to test triggers.</p>
+        <form method="post">
+          <input name="trig_volunteer_id" placeholder="VolunteerID">
+          <input name="trig_victim_id"    placeholder="VictimID">
+          <input name="trig_resource_id"  placeholder="ResourceID">
+          <input name="trig_qty"          placeholder="Qty for valid insert">
+          <input name="trig_date"         placeholder="YYYY-MM-DD (optional)">
+          <div>
+            <button type="submit" name="action" value="trig_before">1) BEFORE: negative (should block)</button>
+            <button type="submit" name="action" value="trig_after_insert">2) AFTER INSERT: valid</button>
+            <button type="submit" name="action" value="trig_after_delete">3) AFTER DELETE: restore</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

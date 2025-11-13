@@ -1,4 +1,21 @@
-body { background: #f8fafc; }
-.nav-link { color: #333; }
-.nav-link:hover { background: #e7eef7; border-radius: 6px; }
-.card { border-radius: 12px; }
+/* Subtle polish for layout and login card */
+.auth-wrap {
+  min-height: calc(100vh - 120px);
+  display: grid;
+  place-items: center;
+  padding: 2rem 1rem;
+}
+
+.auth-card {
+  max-width: 420px;
+  width: 100%;
+}
+
+.auth-form input {
+  border-radius: 12px;
+}
+
+/* Optional: tighten nav at smaller widths */
+@media (max-width: 980px) {
+  .nav a { margin-right: 6px; }
+}

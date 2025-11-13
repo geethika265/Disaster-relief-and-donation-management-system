@@ -564,6 +564,216 @@ FROM ReliefCamp;
 
 
 
+CREATE TABLE Users (
+    user_id INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    role ENUM('Admin','Volunteer','NGO','Victim','Government') NOT NULL
+);
+
+
+-- 🔐 Admin (password: admin123)
+INSERT INTO Users (username, password, role)
+VALUES ('admin', 
+'$pbkdf2:sha256:600000$D3PkCBbZMTn6Kn6b$6c74cb7cfb998b20fbc2f2a26029bbdd7c2c9514a437c54720dd26321d5dc527',
+'Admin');
+
+-- 🧍 Volunteer (password: vol123)
+INSERT INTO Users (username, password, role)
+VALUES ('volunteer1', 
+'$pbkdf2:sha256:600000$mjQXz7P87LUkae9S$6de75e9cc4a49c0b9a23a4e15a1b746fcb2fca6e739be93358699f46e63e63fc',
+'Volunteer');
+
+-- 🏢 NGO (password: ngo123)
+INSERT INTO Users (username, password, role)
+VALUES ('ngo1', 
+'$pbkdf2:sha256:600000$hzvDnM7iAi0d1RPl$7a6cbfbdb37794862cdadbaaf967c59f87f19d9a4a4e08e8e1545ea8b5ed8572',
+'NGO');
+
+-- 🧑 Victim (password: vic123)
+INSERT INTO Users (username, password, role)
+VALUES ('victim1', 
+'$pbkdf2:sha256:600000$LOJrDUiKtSC9DWpa$e861b558b3c8e2b61f7e3c9a09b28571eb12e5c66f953480f70c304b232c5113',
+'Victim');
+
+-- 🏛 Government (password: gov123)
+INSERT INTO Users (username, password, role)
+VALUES ('govt1', 
+'$pbkdf2:sha256:600000$QhD7DquZJln4RqvS$52b056a6c875a73124c285aa578a5aa4f1cdd689c4dfb24a1880b19a10a1659f',
+'Government');
 
 
 
+SELECT user_id, username, LEFT(password, 25) AS pass_prefix, role
+FROM Users;
+
+USE Disaster_relief2;
+
+UPDATE Users
+SET password = SUBSTRING(password, 2)
+WHERE password LIKE '$pbkdf2:%';
+
+
+USE Disaster_relief2;
+UPDATE Users
+SET password = SUBSTRING(password, 2)
+WHERE password LIKE '$pbkdf2:%';
+
+
+USE Disaster_relief2;
+
+-- If admin's id is 1 this will work directly:
+UPDATE Users
+SET password = 'admin123'
+WHERE user_id = 1 AND username = 'admin';
+
+USE Disaster_relief2;
+
+UPDATE Users
+SET password = CASE
+  WHEN username = 'volunteer1' THEN 'vol123'
+  WHEN username = 'ngo1'       THEN 'ngo123'
+  WHEN username = 'victim1'    THEN 'vic123'
+  WHEN username = 'govt1'      THEN 'gov123'
+  ELSE password
+END
+WHERE username IN ('volunteer1','ngo1','victim1','govt1');
+
+-- === Disaster_relief2: simplify users & roles ===
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- === Disaster_relief2: simplify users & roles (fixed order) ===
+USE Disaster_relief2;
+
+-- Allow multi-row updates in this session only
+SET SQL_SAFE_UPDATES = 0;
+
+START TRANSACTION;
+
+-- 0) (Optional) Normalize any bad PBKDF2 hashes (remove accidental leading '$')
+UPDATE Users
+SET password = SUBSTRING(password, 2)
+WHERE password LIKE '$pbkdf2:%';
+
+-- 1) EXPAND the ENUM so it accepts the new values we will use
+ALTER TABLE Users
+  MODIFY role ENUM('Admin','Volunteer','NGO','Victim','Government','Operator','Viewer') NOT NULL;
+
+-- 2) Map old roles -> new compact roles
+UPDATE Users SET role = 'Operator' WHERE role IN ('Volunteer','NGO');
+UPDATE Users SET role = 'Viewer'   WHERE role IN ('Victim','Government');
+
+-- 3) SHRINK the ENUM down to the final three values
+ALTER TABLE Users
+  MODIFY role ENUM('Admin','Operator','Viewer') NOT NULL;
+
+-- 4) Seed minimal demo users (plaintext once; your app will rehash to bcrypt on first login)
+INSERT IGNORE INTO Users (username, password, role)
+VALUES ('operator1', 'op123', 'Operator');
+
+INSERT IGNORE INTO Users (username, password, role)
+VALUES ('viewer1', 'view123', 'Viewer');
+
+-- (Optional) Ensure admin exists (uncomment if needed)
+-- INSERT IGNORE INTO Users (username, password, role)
+-- VALUES ('admin','admin123','Admin');
+
+COMMIT;
+
+-- Re-enable safe updates
+SET SQL_SAFE_UPDATES = 1;
+
+-- Verify
+SELECT user_id, username, role, LEFT(password, 10) AS pass_prefix
+FROM Users
+ORDER BY user_id;
+
+
+
+
+USE Disaster_relief2;
+SET SQL_SAFE_UPDATES = 0;
+
+-- Option B: keep admin + volunteer1 (as Operator) + viewer1
+DELETE FROM Users
+WHERE username IN ('ngo1','victim1','govt1','operator1');
+
+SET SQL_SAFE_UPDATES = 1;
+
+SELECT user_id, username, role FROM Users ORDER BY user_id;
+
+
+
+
+
+USE Disaster_relief2;
+
+SET SQL_SAFE_UPDATES = 0;
+
+UPDATE Users
+SET user_id = 3
+WHERE username = 'viewer1';
+
+SET SQL_SAFE_UPDATES = 1;
+
+SELECT * FROM Users ORDER BY user_id;
+
+
+-- Make sure the volunteer is on duty that day
+CALL assign_volunteer(101, 201, '2024-07-04');
+
+-- Give camp 101 enough stock (safe if it already exists)
+INSERT INTO Stocked_At (CampID, ResourceID, CurrentQty, ReorderLevel)
+VALUES (101, 401, 500, 100)
+ON DUPLICATE KEY UPDATE CurrentQty = GREATEST(CurrentQty, 50);
+
+INSERT INTO Stocked_At (CampID, ResourceID, CurrentQty, ReorderLevel)
+VALUES (101, 402, 100, 20)
+ON DUPLICATE KEY UPDATE CurrentQty = GREATEST(CurrentQty, 20);
+
+-- Two victims in the same camp/day so "above-average" has something to compare
+-- (adjust VictimIDs if needed; your earlier screenshots used 301 and 302 in Camp 101)
+CALL DistributeAid(201, 301, 401, 5, '2024-07-04');  -- 5 rice bags to victim 301
+CALL DistributeAid(201, 302, 401, 1, '2024-07-04');  -- 1 rice bag to victim 302
+CALL DistributeAid(201, 301, 402, 2, '2024-07-04');  -- 2 first-aid kits to victim 301
+
+
+CREATE USER 'admin_user'@'localhost' IDENTIFIED BY 'admin123';
+GRANT ALL PRIVILEGES ON Disaster_relief2.* TO 'admin_user'@'localhost';
+FLUSH PRIVILEGES;
+
+-- Operator (partial privileges)
+CREATE USER 'operator_user'@'localhost' IDENTIFIED BY 'op123';
+GRANT SELECT, INSERT, UPDATE ON Disaster_relief2.AidDistribution TO 'operator_user'@'localhost';
+GRANT SELECT ON Disaster_relief2.* TO 'operator_user'@'localhost';
+
+-- Viewer (read-only)
+CREATE USER 'viewer_user'@'localhost' IDENTIFIED BY 'view123';
+GRANT SELECT ON Disaster_relief2.* TO 'viewer_user'@'localhost';
+FLUSH PRIVILEGES;
+
+
+SELECT user_id, username, password, role FROM Users;
+
+TRUNCATE TABLE Users;
+INSERT INTO Users (username, password, role) VALUES
+  ('admin',      'admin123', 'Admin'),
+  ('volunteer1', 'vol123',   'Operator'),
+  ('viewer1',    'view123',  'Viewer');

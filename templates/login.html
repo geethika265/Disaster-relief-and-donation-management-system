@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="auth-wrap">
+  <article class="card auth-card">
+    <header>
+      <h2 style="margin:0;">Sign in</h2>
+      <p class="muted" style="margin:.25rem 0 0;">Use your MySQL user credentials</p>
+    </header>
+
+    <form method="POST" class="auth-form">
+      <label for="username">Username</label>
+      <input id="username" name="username" type="text"
+             placeholder="e.g., admin_user" required>
+
+      <label for="password" style="margin-top:.5rem;">Password</label>
+      <input id="password" name="password" type="password"
+             placeholder="••••••••" required>
+
+      <button type="submit" class="primary"
+              style="width:100%; margin-top:.75rem;">Login</button>
+    </form>
+
+    <footer class="muted" style="margin-top:.5rem;">
+      <details>
+        <summary>Demo accounts (MySQL users)</summary>
+        <ul style="margin:.25rem 0 0 1rem;">
+          <li><b>Admin</b>: admin_user / admin123</li>
+          <li><b>Operator</b>: operator_user / op123</li>
+          <li><b>Viewer</b>: viewer_user / view123</li>
+        </ul>
+      </details>
+    </footer>
+  </article>
+</section>
+
+<style>
+.auth-wrap {
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  margin-top:3rem;
+}
+.auth-card {
+  max-width: 380px;
+  width:100%;
+}
+.auth-form input {
+  width:100%;
+}
+</style>
+
+{% endblock %}
